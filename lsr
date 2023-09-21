@@ -1,0 +1,105 @@
+#include <iostream>
+#include <vector>
+#include <climits>
+using namespace std;
+
+#define MAX_NODES 100
+
+struct Node {
+    int id;
+    vector<pair<int, int> > neighbors; // {neighbor_id, cost}
+};
+
+int findMinDistanceNode(int dist[], bool visited[], int numNodes) {
+    int minDist = INT_MAX, minIndex;
+    for (int i = 0; i < numNodes; ++i) {
+        if (!visited[i] && dist[i] <= minDist) {
+            minDist = dist[i];
+            minIndex = i;
+        }
+    }
+    return minIndex;
+}
+
+
+void findShortestPath(Node network[], int source, int destination, int numNodes) {
+    int dist[MAX_NODES]; 
+    int prev[MAX_NODES]; 
+    bool visited[MAX_NODES] = { false }; 
+
+    
+    for (int i = 0; i < numNodes; ++i) {
+        dist[i] = INT_MAX;
+        prev[i] = -1;
+    }
+
+    dist[source] = 0; 
+
+    for (int count = 0; count < numNodes - 1; ++count) {
+        int u = findMinDistanceNode(dist, visited, numNodes);
+        visited[u] = true;
+
+        
+        for (const auto& neighbor : network[u].neighbors) {
+            int v = neighbor.first;
+            int cost = neighbor.second;
+            if (!visited[v] && dist[u] != INT_MAX && dist[u] + cost < dist[v]) {
+                dist[v] = dist[u] + cost;
+                prev[v] = u;
+            }
+        }
+    }
+
+    
+    if (dist[destination] == INT_MAX) {
+        cout << "No path exists from source to destination.\n";
+        return;
+    }
+
+    
+    cout << "Shortest path from node " << source << " to node " << destination << ":\n";
+    int node = destination;
+    vector<int> path;
+    while (node != -1) {
+        path.push_back(node);
+        node = prev[node];
+    }
+    for (int i = path.size() - 1; i >= 0; --i) {
+        cout << path[i];
+        if (i != 0)
+            cout << " -> ";
+    }
+    cout << "\n";
+}
+
+int main() {
+    int numNodes, numEdges;
+    cout << "Enter the number of nodes in the network: ";
+    cin >> numNodes;
+    cout << "Enter the number of edges in the network: ";
+    cin >> numEdges;
+
+    Node network[MAX_NODES];
+    for (int i = 0; i < numNodes; ++i) {
+        network[i].id = i;
+    }
+
+    cout << "Enter the edges and their costs:\n";
+    for (int i = 0; i < numEdges; ++i) {
+        int u, v, cost;
+        cout << "Edge " << i + 1 << ": ";
+        cin >> u >> v >> cost;
+        network[u].neighbors.push_back({ v, cost });
+        network[v].neighbors.push_back({ u, cost });
+    }
+
+    int source, destination;
+    cout << "Enter the source node: ";
+    cin >> source;
+    cout << "Enter the destination node: ";
+    cin >> destination;
+
+    findShortestPath(network, source, destination, numNodes);
+
+    return 0;
+}
