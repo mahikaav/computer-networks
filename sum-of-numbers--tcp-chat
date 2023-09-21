@@ -1,0 +1,120 @@
+//Server side
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <string.h>
+#include <arpa/inet.h>
+
+#define BUFFER_SIZE 1024
+
+int main() {
+    int serverSocket, clientSocket;
+    struct sockaddr_in serverAddress, clientAddress;
+    socklen_t clientLength;
+    char buffer[BUFFER_SIZE];
+    int sum = 0;
+    
+    if ((serverSocket = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+        perror("Socket creation failed");
+        exit(EXIT_FAILURE);
+    }
+    
+    serverAddress.sin_family = AF_INET;
+    serverAddress.sin_addr.s_addr = INADDR_ANY;
+    serverAddress.sin_port = htons(8080);
+    
+    if (bind(serverSocket, (struct sockaddr *)&serverAddress, sizeof(serverAddress)) < 0) {
+        perror("Bind failed");
+        exit(EXIT_FAILURE);
+    }
+
+    if (listen(serverSocket, 1) < 0) {
+        perror("Listen failed");
+        exit(EXIT_FAILURE);
+    }
+    
+    printf("Server listening on port 8080...\n");
+    clientLength = sizeof(clientAddress);
+    if ((clientSocket = accept(serverSocket, (struct sockaddr *)&clientAddress, &clientLength)) < 0) {
+        perror("Accept failed");
+        exit(EXIT_FAILURE);
+    }
+
+    while (1) {
+        int valread = read(clientSocket, buffer, BUFFER_SIZE);
+        if (valread <= 0) {
+            break;
+        }
+        
+        int num = atoi(buffer);
+        sum += num;
+        
+        printf("Received: %d\n", num);
+        sprintf(buffer, "%d", sum);
+        write(clientSocket, buffer, strlen(buffer));
+    }
+    
+    printf("Sum: %d\n", sum);
+    
+    close(clientSocket);
+    close(serverSocket);
+    
+    return 0;
+}
+
+// Client side
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <string.h>
+#include <arpa/inet.h>
+
+#define BUFFER_SIZE 1024
+
+int main() {
+    int clientSocket;
+    struct sockaddr_in serverAddress;
+    char buffer[BUFFER_SIZE];
+
+    if ((clientSocket = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+        perror("Socket creation failed");
+        exit(EXIT_FAILURE);
+    }
+    
+    serverAddress.sin_family = AF_INET;
+    serverAddress.sin_port = htons(8080);
+    
+    if (inet_pton(AF_INET, "127.0.0.1", &(serverAddress.sin_addr)) <= 0) {
+        perror("Invalid address or address not supported");
+        exit(EXIT_FAILURE);
+    }
+
+    if (connect(clientSocket, (struct sockaddr *)&serverAddress, sizeof(serverAddress)) < 0) {
+        perror("Connection failed");
+        exit(EXIT_FAILURE);
+    }
+
+    while (1) {
+        printf("Enter a number (or 'quit' to stop): ");
+        fgets(buffer, BUFFER_SIZE, stdin);
+        buffer[strcspn(buffer, "\n")] = '\0';  // Remove newline character
+        
+        if (strcmp(buffer, "quit") == 0) {
+            break;
+        }
+        
+        write(clientSocket, buffer, strlen(buffer));
+        int valread = read(clientSocket, buffer, BUFFER_SIZE);
+        if (valread <= 0) {
+            break;
+        }
+        int sum = atoi(buffer);
+        printf("Sum: %d\n", sum);
+    }
+    
+    close(clientSocket);
+    
+    return 0;
+}
