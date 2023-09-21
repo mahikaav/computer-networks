@@ -4,7 +4,6 @@ This repository contains a collection of computer network topic codes written an
 
 ## Table of Contents
 
-- Linux network commands
 - Socket Programming I: Client-Server Connection Establishment
 - Socket Programming II: TCP chat application
 - Socket Programming III: Date and time for TCP chat application
