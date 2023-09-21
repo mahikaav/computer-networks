@@ -1,0 +1,200 @@
+// i) CSMA 
+#include <iostream>
+#include <cstdlib>
+#include <ctime>
+#include <unistd.h>
+
+using namespace std;
+
+const int MAX_NODES = 100;
+
+void simulateCSMA(int numNodes, int numPackets, int timeDelay) {
+    srand(time(0));
+    bool nodes[MAX_NODES] = {false};
+
+    for (int packet = 1; packet <= numPackets; packet++) {
+        cout << "Packet " << packet << " transmitted." << endl;
+
+        for (int node = 0; node < numNodes; node++) {
+            if (!nodes[node]) {
+                double randNum = static_cast<double>(rand()) / RAND_MAX;
+
+                if (randNum < 0.1) {
+                    cout << "Node " << node + 1 << " successfully received the packet." << endl;
+                    nodes[node] = true;
+
+                    usleep(timeDelay);
+                }
+            }
+        }
+    }
+}
+
+int main() {
+    int numNodes, numPackets, timeDelay;
+
+    cout << "Enter the number of nodes: ";
+    cin >> numNodes;
+
+    cout << "Enter the number of packets: ";
+    cin >> numPackets;
+
+    cout << "Enter the time delay (in microseconds): ";
+    cin >> timeDelay;
+
+    simulateCSMA(numNodes, numPackets, timeDelay);
+
+    return 0;
+}
+
+// ii) CSMA/CD
+
+#include <iostream>
+#include <cstdlib>
+#include <ctime>
+#include <unistd.h>
+
+using namespace std;
+
+const int MAX_NODES = 100;
+const int MAX_RETRIES = 10;
+const int SLOT_TIME = 1000;  // 1 millisecond
+
+void simulateCSMACD(int numNodes, int numPackets, int timeDelay) {
+    srand(time(0));
+
+    bool nodes[MAX_NODES] = {false};
+
+    for (int packet = 1; packet <= numPackets; packet++) {
+        cout << "Packet " << packet << " transmitted." << endl;
+
+        int retries = 0;
+        bool packetReceived = false;
+
+        while (!packetReceived && retries < MAX_RETRIES) {
+            for (int node = 0; node < numNodes; node++) {
+                if (!nodes[node]) {
+                    double randNum = static_cast<double>(rand()) / RAND_MAX;
+
+                    if (randNum < 0.1) {
+                        cout << "Node " << node + 1 << " successfully received the packet." << endl;
+                        nodes[node] = true;
+                        packetReceived = true;
+
+                        usleep(timeDelay);
+                        break;
+                    }
+                    else {
+                        cout << "Collision detected at Node " << node + 1 << ". Retransmitting..." << endl;
+                    }
+                }
+                else {
+                    cout << "Collision detected at Node " << node + 1 << ". Retransmitting..." << endl;
+                }
+            }
+
+            if (!packetReceived) {
+                retries++;
+                usleep(SLOT_TIME * (rand() % (1 << retries)));
+            }
+        }
+
+        if (!packetReceived) {
+            cout << "Packet " << packet << " dropped due to excessive collisions." << endl;
+        }
+    }
+}
+
+int main() {
+    int numNodes, numPackets, timeDelay;
+
+    cout << "Enter the number of nodes: ";
+    cin >> numNodes;
+
+    cout << "Enter the number of packets: ";
+    cin >> numPackets;
+
+    cout << "Enter the time delay (in microseconds): ";
+    cin >> timeDelay;
+
+    simulateCSMACD(numNodes, numPackets, timeDelay);
+
+    return 0;
+}
+
+// iii) CSMA-CA
+
+#include <iostream>
+#include <cstdlib>
+#include <ctime>
+#include <unistd.h>
+
+using namespace std;
+
+const int MAX_NODES = 100;
+const int MAX_RETRIES = 10;
+const int SLOT_TIME = 1000;  // 1 millisecond
+
+void simulateCSMACA(int numNodes, int numPackets, int timeDelay) {
+    srand(time(0));
+
+    bool nodes[MAX_NODES] = {false};
+
+    for (int packet = 1; packet <= numPackets; packet++) {
+        cout << "Packet " << packet << " transmitted." << endl;
+
+        int retries = 0;
+        bool packetReceived = false;
+
+        while (!packetReceived && retries < MAX_RETRIES) {
+            for (int node = 0; node < numNodes; node++) {
+                if (!nodes[node]) {
+                    double randNum = static_cast<double>(rand()) / RAND_MAX;
+
+                    if (randNum < 0.1) {
+                        cout << "Node " << node + 1 << " successfully received the packet." << endl;
+                        nodes[node] = true;
+                        packetReceived = true;
+
+                        usleep(timeDelay);
+                        break;
+                    }
+                    else {
+                        cout << "Collision detected at Node " << node + 1 << ". Deferring transmission..." << endl;
+                        usleep(SLOT_TIME * (rand() % (1 << retries)));
+                    }
+                }
+                else {
+                    cout << "Collision detected at Node " << node + 1 << ". Deferring transmission..." << endl;
+                    usleep(SLOT_TIME * (rand() % (1 << retries)));
+                }
+            }
+
+            if (!packetReceived) {
+                retries++;
+            }
+        }
+
+        if (!packetReceived) {
+            cout << "Packet " << packet << " dropped due to excessive collisions." << endl;
+        }
+    }
+}
+
+int main() {
+    int numNodes, numPackets, timeDelay;
+
+    cout << "Enter the number of nodes: ";
+    cin >> numNodes;
+
+    cout << "Enter the number of packets: ";
+    cin >> numPackets;
+
+    cout << "Enter the time delay (in microseconds): ";
+    cin >> timeDelay;
+
+    simulateCSMACA(numNodes, numPackets, timeDelay);
+
+    return 0;
+}
+
