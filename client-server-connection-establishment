@@ -1,0 +1,49 @@
+// Server side:
+#include <stdio.h>
+#include <sys/socket.h>
+#include <arpa/inet.h>
+#include <string.h>
+#include <unistd.h>
+#include <time.h> 
+
+int main() {
+    int server_fd, client_fd;
+    struct sockaddr_in server_addr, client_addr;
+    int addrlen = sizeof(server_addr);
+    char msg[100] = "I am the message sent from the server";
+    server_fd = socket(AF_INET, SOCK_STREAM, 0);
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_addr.s_addr = INADDR_ANY;
+    server_addr.sin_port = htons(8000);
+    bind(server_fd, (struct sockaddr *)&server_addr, sizeof(server_addr));
+    listen(server_fd, 3);
+    printf("Waiting for client connection...\n");
+    client_fd = accept(server_fd, (struct sockaddr *)&client_addr, (socklen_t*)&addrlen);
+    time_t now = time(NULL); 
+    printf("Connection established with: %s:%d at %s", inet_ntoa(client_addr.sin_addr), ntohs(client_addr.sin_port), ctime(&now));
+    send(client_fd, msg, strlen(msg), 0);
+    close(client_fd);
+    return 0;
+}
+
+// Client side 
+#include <stdio.h>
+#include <sys/socket.h>
+#include <arpa/inet.h>
+#include <string.h>
+#include <unistd.h>
+
+int main() {
+    int client_fd;
+    struct sockaddr_in server_addr;
+    char message[100];
+    client_fd = socket(AF_INET, SOCK_STREAM, 0);
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
+    server_addr.sin_port = htons(8000);
+    connect(client_fd, (struct sockaddr *)&server_addr, sizeof(server_addr));
+    read(client_fd, message, 100);
+    printf("Received message from server: %s\n", message);
+    close(client_fd);
+    return 0;
+}
