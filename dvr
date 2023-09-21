@@ -1,0 +1,78 @@
+#include <iostream>
+#include <vector>
+
+#define INF 99999
+
+using namespace std;
+
+class DistanceVectorRouting {
+private:
+    int numNodes;
+    vector<vector<int> > distanceMatrix;
+    vector<vector<int> > routingTable;
+
+public:
+    DistanceVectorRouting(int nodes) {
+        numNodes = nodes;
+        distanceMatrix.resize(numNodes, vector<int>(numNodes, INF));
+        routingTable.resize(numNodes, vector<int>(numNodes, -1));
+    }
+
+    void addLink(int node1, int node2, int cost) {
+        distanceMatrix[node1][node2] = cost;
+        distanceMatrix[node2][node1] = cost;
+        routingTable[node1][node2] = node2;
+        routingTable[node2][node1] = node1;
+    }
+
+    void updateRoutingTable() {
+        vector<vector<int> > tempDistanceMatrix = distanceMatrix;
+
+        for (int k = 0; k < numNodes; k++) {
+            for (int i = 0; i < numNodes; i++) {
+                for (int j = 0; j < numNodes; j++) {
+                    if (tempDistanceMatrix[i][j] > tempDistanceMatrix[i][k] + tempDistanceMatrix[k][j]) {
+                        tempDistanceMatrix[i][j] = tempDistanceMatrix[i][k] + tempDistanceMatrix[k][j];
+                        routingTable[i][j] = routingTable[i][k];
+                    }
+                }
+            }
+        }
+    }
+
+    void printRoutingTable() {
+        cout << "Routing Table:" << endl;
+        for (int i = 0; i < numNodes; i++) {
+            cout << "Node " << i << ":" << endl;
+            cout << "Destination\tNext Hop" << endl;
+            for (int j = 0; j < numNodes; j++) {
+                if (j != i) {
+                    cout << j << "\t\t" << routingTable[i][j] << endl;
+                }
+            }
+            cout << endl;
+        }
+    }
+};
+
+int main() {
+    int numNodes, numLinks;
+    cout << "Enter the number of nodes: ";
+    cin >> numNodes;
+    cout << "Enter the number of links: ";
+    cin >> numLinks;
+
+    DistanceVectorRouting dvr(numNodes);
+
+    cout << "Enter the links (node1 node2 cost):" << endl;
+    for (int i = 0; i < numLinks; i++) {
+        int node1, node2, cost;
+        cin >> node1 >> node2 >> cost;
+        dvr.addLink(node1, node2, cost);
+    }
+
+    dvr.updateRoutingTable();
+    dvr.printRoutingTable();
+
+    return 0;
+}
